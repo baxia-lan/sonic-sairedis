@@ -4,7 +4,7 @@
 #include <unistd.h>
 
 extern "C" {
-#include "sai.h"
+#include <sai.h>
 }
 
 /* Function declarations */

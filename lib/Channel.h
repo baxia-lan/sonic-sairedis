@@ -7,7 +7,7 @@
 #include "swss/sal.h"
 
 extern "C" {
-#include "sai.h"
+#include <sai.h>
 }
 
 #include <memory>

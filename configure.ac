@@ -279,11 +279,11 @@ AM_COND_IF([SAIVS],
 ])
 
 AC_DEFINE([SAIREDIS_GIT_REVISION],
-        "[m4_esyscmd([echo -n $(git rev-parse --short HEAD || echo 0000000)])]",
+        "[m4_esyscmd([echo -n $(git rev-parse --short HEAD 2>/dev/null || echo 0000000)])]",
         [sairedis git revision information])
 
 AC_DEFINE([SAI_GIT_REVISION],
-        "[m4_esyscmd([echo -n $(cd SAI && git rev-parse --short HEAD || echo 0000000)])]",
+        "[m4_esyscmd([echo -n $(cd SAI && git rev-parse --short HEAD 2>/dev/null || echo 0000000)])]",
         [SAI git revision information])
 
 AC_OUTPUT(Makefile

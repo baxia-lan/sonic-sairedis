@@ -10,7 +10,7 @@
 #include <memory>
 
 extern "C" {
-#include "sai.h"
+#include <sai.h>
 }
 
 namespace saivs

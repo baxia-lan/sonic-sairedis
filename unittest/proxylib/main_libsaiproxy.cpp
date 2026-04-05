@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 
 extern "C" {
-#include "sai.h"
+#include <sai.h>
 }
 
 #include "swss/logger.h"

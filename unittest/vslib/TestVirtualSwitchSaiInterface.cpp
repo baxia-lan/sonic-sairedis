@@ -5,7 +5,7 @@
 #include <array>
 
 extern "C" {
-#include "sai.h"
+#include <sai.h>
 #include "saimetadatautils.h"
 }
 

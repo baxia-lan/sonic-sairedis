@@ -7,7 +7,7 @@
 #include <zlib.h>
 
 extern "C" {
-#include "sai.h"
+#include <sai.h>
 #include "saimetadata.h"
 }
 

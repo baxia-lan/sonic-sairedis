@@ -12,7 +12,7 @@
 #include "pysairedis.h"
 
 extern "C"{
-#include "sai.h"
+#include <sai.h>
 #include "saiextensions.h"
 #include "saimetadata.h"
 }
@@ -103,5 +103,4 @@ PyObject *py_convert_sai_port_oper_status_notification_t_to_PyObject(const sai_p
 PyObject *py_convert_sai_queue_deadlock_notification_data_t_to_PyObject(const sai_queue_deadlock_notification_data_t*ntf)
 { return SWIG_NewPointerObj((void*)ntf, SWIGTYPE_p__sai_queue_deadlock_notification_data_t, 0 | 0); }
 %}
-
 
