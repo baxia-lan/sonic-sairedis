@@ -1,0 +1,115 @@
+"""sonic-sairedis Debian packages — migrated from rules/sairedis.mk.
+
+Custom genrule (not deb_package_set) because syncd-vs needs
+build profiles: -Psyncd,vs,noyangmod,nopython2
+"""
+
+package(default_visibility = ["//visibility:public"])
+
+genrule(
+    name = "sairedis_debs",
+    srcs = glob(
+        ["**/*"],
+        exclude = [
+            ".git/**",
+            "BUILD.bazel",
+            "SAI/doc/**",
+        ],
+    ) + [
+        "//src/sonic-swss-common:swss_common_dev",
+    ],
+    outs = [
+        "libsairedis_1.0.0_amd64.deb",
+        "libsairedis-dev_1.0.0_amd64.deb",
+        "libsaivs_1.0.0_amd64.deb",
+        "libsaivs-dev_1.0.0_amd64.deb",
+        "libsaimetadata_1.0.0_amd64.deb",
+        "libsaimetadata-dev_1.0.0_amd64.deb",
+        "syncd-vs_1.0.0_amd64.deb",
+        "python3-pysairedis_1.0.0_amd64.deb",
+    ],
+    cmd = """
+set -euo pipefail
+SRC_DIR=$$(cd $$(dirname $(location debian/control)) && pwd)/..
+SRC_DIR=$$(cd "$$SRC_DIR" && pwd)
+FIRST_OUT=$$(echo $(OUTS) | awk '{print $$1}')
+OUT_DIR=$$(cd $$(dirname $$FIRST_OUT) && pwd)
+
+# Collect build dep .deb files
+DEPS_DIR=$$(mktemp -d)
+find . -path './bazel-out/*/bin/src/*' -name '*.deb' -size +0 2>/dev/null | while IFS= read -r f; do cp "$$f" "$$DEPS_DIR/" 2>/dev/null; done || true
+echo "Dep debs found: $$(ls $$DEPS_DIR/*.deb 2>/dev/null | wc -l || echo 0)"
+
+docker run --rm --platform linux/amd64 \
+  -v "$$SRC_DIR:/src:ro" \
+  -v "$$OUT_DIR:/output" \
+  -v "$$DEPS_DIR:/deps:ro" \
+  -e DEBIAN_FRONTEND=noninteractive -e SOURCE_DATE_EPOCH= \
+  debian:bookworm-slim \
+  bash -o pipefail -c '
+    apt-get update -qq
+    apt-get install -y -qq --no-install-recommends \
+      build-essential dpkg-dev fakeroot debhelper cmake \
+      libnl-3-dev libnl-genl-3-dev libnl-route-3-dev libnl-nf-3-dev \
+      libhiredis-dev swig libgtest-dev libgmock-dev libboost-dev \
+      libboost-serialization-dev libzmq3-dev pkg-config \
+      dh-exec nlohmann-json3-dev python3-dev libprotobuf-dev \
+      protobuf-compiler autoconf automake libtool libyang2-dev \
+      curl uuid-dev ca-certificates libclang-dev clang \
+      autoconf-archive doxygen graphviz \
+      perl libxml-simple-perl git \
+      aspell aspell-en \
+      libjansson-dev libteam-dev libjemalloc-dev
+
+    curl -sSL https://raw.githubusercontent.com/zeromq/cppzmq/v4.10.0/zmq.hpp -o /usr/include/zmq.hpp
+    curl -sSL https://raw.githubusercontent.com/zeromq/cppzmq/v4.10.0/zmq_addon.hpp -o /usr/include/zmq_addon.hpp
+
+    # Install build deps from Bazel inputs
+    if ls /deps/*.deb >/dev/null 2>&1; then dpkg --force-overwrite --force-depends -i /deps/*.deb 2>&1 || true; fi
+    apt-get install -f -y -qq 2>/dev/null || true
+    ldconfig
+
+    cp -a /src /tmp/build-src
+    cd /tmp/build-src
+    find . -name .git -type f -delete 2>/dev/null || true
+    rm -rf .git
+    git config --global user.email build@sonic && git config --global user.name sonic
+    git init -q && git add -A . && git commit -qm init 2>/dev/null || true
+    for v in 1.10.0 1.11.0 1.12.0 1.13.0 1.14.0 1.15.0 1.16.0; do git tag v$$v 2>/dev/null || true; done
+
+    unset MAKEFLAGS 2>/dev/null || true
+    export DEB_BUILD_OPTIONS=nocheck
+
+    # Build with syncd + vs profiles to produce syncd-vs package
+    dpkg-buildpackage -rfakeroot -b -us -uc -d -Psyncd,vs,noyangmod,nopython2 -j2 2>&1 | tail -30
+    DPKG_EXIT=$$?
+    echo "dpkg-buildpackage exit: $$DPKG_EXIT"
+
+    echo "=== debs produced ==="
+    ls -lh /tmp/*.deb 2>/dev/null || echo "NO DEBS"
+    cp /tmp/*.deb /output/ 2>/dev/null || true
+
+    echo "Files in /output/:"
+    ls -lh /output/*.deb 2>/dev/null | grep -v dbgsym | head -15
+  '
+
+echo "Files in OUT_DIR ($$OUT_DIR):"
+ls -lh "$$OUT_DIR"/*.deb 2>/dev/null | grep -v dbgsym | head -15
+
+# Verify outputs are real (non-empty) files
+for out in $(OUTS); do
+  if [ ! -s "$$out" ]; then
+    echo "FAIL: $$out is empty — deb build failed"
+    exit 1
+  fi
+done
+""",
+    tags = ["no-cache", "requires-docker", "no-sandbox"],
+    visibility = ["//visibility:public"],
+)
+
+alias(name = "sairedis", actual = ":sairedis_debs", visibility = ["//visibility:public"])
+alias(name = "sairedis_dev", actual = ":sairedis_debs", visibility = ["//visibility:public"])
+alias(name = "saivs", actual = ":sairedis_debs", visibility = ["//visibility:public"])
+alias(name = "saimetadata", actual = ":sairedis_debs", visibility = ["//visibility:public"])
+alias(name = "saimetadata_dev", actual = ":sairedis_debs", visibility = ["//visibility:public"])
