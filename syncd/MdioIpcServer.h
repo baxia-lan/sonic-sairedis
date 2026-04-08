@@ -4,7 +4,7 @@
 #include "VendorSai.h"
 
 extern "C" {
-#include <sai.h>
+#include "../SAI/inc/sai.h"
 #include <saiversion.h>
 }
 

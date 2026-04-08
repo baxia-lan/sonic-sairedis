@@ -291,7 +291,7 @@ sub CreateHeader
     Write "/* DO NOT MODIFY, FILE AUTO GENERATED */";
     Write "";
     Write "extern \"C\" {";
-    Write "#include <sai.h>";
+    Write "#include \"../SAI/inc/sai.h\"";
     Write "#include \"saiextensions.h\"";
     Write "}";
     Write "#include \"meta/SaiInterface.h\"";

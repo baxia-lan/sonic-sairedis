@@ -1734,7 +1734,8 @@ sai_status_t RedisRemoteSaiInterface::bulkRemove(
     // key:         object_type:count
     // field:       object_id
     // value:       object_attrs
-    std::string key = serializedObjectType + ":" + std::to_string(entries.size());
+    const auto entryCount = static_cast<unsigned long long>(entries.size());
+    std::string key = serializedObjectType + ":" + std::to_string(entryCount);
 
     m_recorder->recordBulkGenericRemove(serializedObjectType, entries);
 
@@ -1929,7 +1930,8 @@ sai_status_t RedisRemoteSaiInterface::bulkSet(
 
     auto serializedObjectType = sai_serialize_object_type(object_type);
 
-    std::string key = serializedObjectType + ":" + std::to_string(entries.size());
+    const auto entryCount = static_cast<unsigned long long>(entries.size());
+    std::string key = serializedObjectType + ":" + std::to_string(entryCount);
 
     m_recorder->recordBulkGenericSet(serializedObjectType, entries);
 
@@ -1999,7 +2001,8 @@ sai_status_t RedisRemoteSaiInterface::bulkGet(
      * with previous
      */
 
-    const auto key = serializedObjectType + ":" + std::to_string(entries.size());
+    const auto entryCount = static_cast<unsigned long long>(entries.size());
+    const auto key = serializedObjectType + ":" + std::to_string(entryCount);
 
     m_communicationChannel->set(key, entries, REDIS_ASIC_STATE_COMMAND_BULK_GET);
 
@@ -2102,7 +2105,8 @@ sai_status_t RedisRemoteSaiInterface::bulkCreate(
     // key:         object_type:count
     // field:       object_id
     // value:       object_attrs
-    std::string key = str_object_type + ":" + std::to_string(entries.size());
+    const auto entryCount = static_cast<unsigned long long>(entries.size());
+    std::string key = str_object_type + ":" + std::to_string(entryCount);
 
     m_recorder->recordBulkGenericCreate(str_object_type, entries);
 

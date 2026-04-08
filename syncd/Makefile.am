@@ -1,4 +1,7 @@
-SUBDIRS = . tests
+SUBDIRS = .
+if RUNTIME_TESTS
+SUBDIRS += tests
+endif
 
 AM_CXXFLAGS = $(SAIINC) -I$(top_srcdir)/lib -I$(top_srcdir)/vslib
 
@@ -8,7 +11,7 @@ else
 SAILIB=-lsai
 endif
 
-bin_PROGRAMS = syncd syncd_request_shutdown syncd_tests
+bin_PROGRAMS = syncd syncd_request_shutdown
 
 lib_LTLIBRARIES = libMdioIpcClient.la
 
@@ -114,6 +117,8 @@ libMdioIpcClient_la_CPPFLAGS = $(CODE_COVERAGE_CPPFLAGS) -Wno-format-truncation
 libMdioIpcClient_la_CXXFLAGS = $(DBGFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS_COMMON) $(CODE_COVERAGE_CXXFLAGS)
 libMdioIpcClient_la_LIBADD = -lswsscommon $(CODE_COVERAGE_LIBS)
 
+if RUNTIME_TESTS
+bin_PROGRAMS += syncd_tests
 syncd_tests_SOURCES = tests.cpp
 syncd_tests_CXXFLAGS = $(DBGFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS_COMMON)
 syncd_tests_LDFLAGS = -Wl,-rpath,$(top_srcdir)/lib/.libs -Wl,-rpath,$(top_srcdir)/meta/.libs
@@ -121,6 +126,7 @@ syncd_tests_LDADD = libSyncd.a -lhiredis -lswsscommon -lpthread -L$(top_srcdir)/
 			  -L$(top_srcdir)/meta/.libs -lsaimetadata -lsaimeta -lzmq -lz $(CODE_COVERAGE_LIBS) $(VPP_LIBS)
 
 TESTS = syncd_tests
+endif
 
 if SAIVS
 if DASHSAI

@@ -6,7 +6,7 @@
 #include <stdio.h>
 
 extern "C" {
-#include <sai.h>
+#include "../SAI/inc/sai.h"
 }
 
 #include "lib/Sai.h"

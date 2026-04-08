@@ -1,7 +1,11 @@
 #pragma once
 
 extern "C" {
+#if __has_include("../SAI/inc/sai.h")
+#include "../SAI/inc/sai.h"
+#else
 #include <sai.h>
+#endif
 #include "saimetadata.h"
 }
 

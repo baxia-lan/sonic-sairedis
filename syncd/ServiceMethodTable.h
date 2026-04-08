@@ -1,7 +1,7 @@
 #pragma once
 
 extern "C"{
-#include <sai.h>
+#include "../SAI/inc/sai.h"
 }
 
 #include "swss/logger.h"

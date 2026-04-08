@@ -22,9 +22,20 @@ export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 #export DEB_LDFLAGS_MAINT_APPEND = -Wl,--as-needed
 
 configure_opts = --disable-static
+SAIREDIS_BUILD_JOBS ?= 4
 ifeq ($(ENABLE_ASAN), y)
 	configure_opts += --enable-asan
 endif
+ifeq ($(BUILD_SKIP_TEST), y)
+	configure_opts += --disable-runtime-tests
+endif
+
+fix_installed_sai_headers = \
+	set -eu; \
+	for hdr in debian/*/usr/include/sai/sai*.h; do \
+		[ -f "$$hdr" ] || continue; \
+		sed -E -i 's@\#include[[:space:]]+"../inc/([^"]+)"@\#include <\1>@g' "$$hdr"; \
+	done
 
 # For Debian jessie, stretch, and buster, and Ubuntu bionic and focal, build
 # Python 2 bindings. This is controlled by the build profile being used.
@@ -48,6 +59,9 @@ endif
 %:
 	dh $@
 
+override_dh_auto_build:
+	dh_auto_build --max-parallel=$(SAIREDIS_BUILD_JOBS)
+
 # dh_make generated override targets
 # This is example for Cmake (See https://bugs.debian.org/641051 )
 #override_dh_auto_configure:
@@ -63,12 +77,13 @@ ifneq ($(filter rpc,$(DEB_BUILD_PROFILES)),)
 	# This is to build a RPC-enabled version, and package that version into syncd-rpc
 	dh_auto_configure -- ${SWSS_COMMON_CONFIG} $(configure_opts) --enable-rpcserver
 	make clean
-	dh_auto_build
+	dh_auto_build --max-parallel=$(SAIREDIS_BUILD_JOBS)
 	make install DESTDIR=$(shell pwd)/debian/tmp
 	dh_install -N syncd
 else
 	dh_install
 endif
+	$(fix_installed_sai_headers)
 ifneq ($(filter rpc,$(DEB_BUILD_PROFILES)),)
 	sed -i 's|ENABLE_SAITHRIFT=0|ENABLE_SAITHRIFT=1 # Add a comment to fix https://github.com/Azure/sonic-buildimage/issues/2694 |' debian/syncd-rpc/usr/bin/syncd_init_common.sh
 endif

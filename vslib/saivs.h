@@ -1,7 +1,7 @@
 #pragma once
 
 extern "C" {
-#include <sai.h>
+#include "../SAI/inc/sai.h"
 }
 
 #define SAI_KEY_VS_SWITCH_TYPE              "SAI_VS_SWITCH_TYPE"

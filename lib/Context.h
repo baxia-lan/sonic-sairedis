@@ -1,10 +1,14 @@
 #pragma once
 
+#include "meta/SaiInterface.h"
+
 #include "RedisRemoteSaiInterface.h"
 #include "ContextConfig.h"
 
 #include "meta/Notification.h"
 #include "meta/Meta.h"
+
+#include <functional>
 
 namespace sairedis
 {

@@ -3,7 +3,7 @@
 #include <cstdint>
 
 extern "C" {
-#include <sai.h>
+#include "../../SAI/inc/sai.h"
 }
 #include <unordered_map>
 #include <vector>

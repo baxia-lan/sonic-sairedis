@@ -1415,7 +1415,8 @@ sai_status_t ClientSai::bulkCreate(
     // key:         object_type:count
     // field:       object_id
     // value:       object_attrs
-    std::string key = str_object_type + ":" + std::to_string(entries.size());
+    const auto entryCount = static_cast<unsigned long long>(entries.size());
+    std::string key = str_object_type + ":" + std::to_string(entryCount);
 
     m_communicationChannel->set(key, entries, REDIS_ASIC_STATE_COMMAND_BULK_CREATE);
 
@@ -1480,7 +1481,8 @@ sai_status_t ClientSai::bulkRemove(
     // key:         object_type:count
     // field:       object_id
     // value:       object_attrs
-    std::string key = serializedObjectType + ":" + std::to_string(entries.size());
+    const auto entryCount = static_cast<unsigned long long>(entries.size());
+    std::string key = serializedObjectType + ":" + std::to_string(entryCount);
 
     m_communicationChannel->set(key, entries, REDIS_ASIC_STATE_COMMAND_BULK_REMOVE);
 
@@ -1546,7 +1548,8 @@ sai_status_t ClientSai::bulkSet(
 
     auto serializedObjectType = sai_serialize_object_type(object_type);
 
-    std::string key = serializedObjectType + ":" + std::to_string(entries.size());
+    const auto entryCount = static_cast<unsigned long long>(entries.size());
+    std::string key = serializedObjectType + ":" + std::to_string(entryCount);
 
     m_communicationChannel->set(key, entries, REDIS_ASIC_STATE_COMMAND_BULK_SET);
 

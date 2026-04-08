@@ -1,5 +1,7 @@
 #pragma once
 
+#include "meta/SaiInterface.h"
+
 #include "Recorder.h"
 #include "Context.h"
 

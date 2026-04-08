@@ -97,6 +97,16 @@ AC_ARG_ENABLE(redis-test,
 esac],[rtest=false])
 AM_CONDITIONAL(RTEST, test x$rtest = xtrue)
 
+AC_ARG_ENABLE(runtime-tests,
+[  --enable-runtime-tests  build runtime test binaries and gtest targets],
+[case "${enableval}" in
+	yes) runtime_tests=true ;;
+	no)  runtime_tests=false ;;
+	*) AC_MSG_ERROR(bad value ${enableval} for --enable-runtime-tests) ;;
+esac],[runtime_tests=true])
+AS_IF([test "x$BUILD_SKIP_TEST" = "xy"],[runtime_tests=false],[])
+AM_CONDITIONAL(RUNTIME_TESTS, test x$runtime_tests = xtrue)
+
 if test x$CONFIGURED_ARCH = xarmhf && test x$CROSS_BUILD_ENVIRON = xy; then
 	AM_CONDITIONAL(ARCH64, false)
 else

@@ -12,7 +12,7 @@
 #include "meta/sai_serialize.h"
 
 extern "C" {
-#include <sai.h>
+#include "../SAI/inc/sai.h"
 }
 
 #include "saivs.h"

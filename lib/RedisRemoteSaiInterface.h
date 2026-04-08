@@ -1,5 +1,7 @@
 #pragma once
 
+#include "meta/SaiInterface.h"
+
 #include "RemoteSaiInterface.h"
 #include "SwitchContainer.h"
 #include "VirtualObjectIdManager.h"
