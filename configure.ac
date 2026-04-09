@@ -12,8 +12,15 @@ AC_PROG_LIBTOOL
 AC_HEADER_STDC
 AM_PATH_PYTHON3
 AX_PYTHON3_DEVEL
-AX_CODE_COVERAGE
-AX_ADD_AM_MACRO_STATIC([])
+m4_ifdef([AX_CODE_COVERAGE], [AX_CODE_COVERAGE], [
+	AM_CONDITIONAL([CODE_COVERAGE_ENABLED], [false])
+	AC_SUBST([CODE_COVERAGE_ENABLED], [no])
+	AC_SUBST([CODE_COVERAGE_CPPFLAGS], [])
+	AC_SUBST([CODE_COVERAGE_CFLAGS], [])
+	AC_SUBST([CODE_COVERAGE_CXXFLAGS], [])
+	AC_SUBST([CODE_COVERAGE_LIBS], [])
+])
+m4_ifdef([AX_ADD_AM_MACRO_STATIC], [AX_ADD_AM_MACRO_STATIC([])])
 
 AM_CONDITIONAL(SONIC_ASIC_PLATFORM_BAREFOOT,   test x$CONFIGURED_PLATFORM = xbarefoot)
 AM_CONDITIONAL(SONIC_ASIC_PLATFORM_BROADCOM,   test x$CONFIGURED_PLATFORM = xbroadcom)
@@ -34,9 +41,10 @@ AM_CONDITIONAL(DEBUG, test x$debug = xtrue)
 
 AM_COND_IF([DEBUG], AC_SUBST(DBGFLAGS, "-ggdb -DDEBUG"), AC_SUBST(DBGFLAGS, "-g"))
 
-AM_COND_IF([DEBUG],
-        [AM_COND_IF([CODE_COVERAGE_ENABLED],
-            AC_MSG_ERROR("Flag conflict --enable-debug 'DEBUG' and --enable-code-coverage 'NDEBUG'"))])
+AS_IF(
+    [test "x$debug" = "xtrue" && test "x${enable_code_coverage:-no}" = "xyes"],
+    [AC_MSG_ERROR("Flag conflict --enable-debug 'DEBUG' and --enable-code-coverage 'NDEBUG'")],
+)
 
 AC_ARG_WITH(sai,
 [  --with-sai=vs           compiling against specific SAI],
@@ -129,6 +137,14 @@ AC_ARG_ENABLE(python2,
 	*) AC_MSG_ERROR(bad value ${enableval} for --enable-python2) ;;
 esac],[python2=true])
 
+AC_ARG_ENABLE(python3-bindings,
+[  --enable-python3-bindings  Generate Python 3 bindings],
+[case "${enableval}" in
+	yes) python3_bindings=true ;;
+	no)  python3_bindings=false ;;
+	*) AC_MSG_ERROR(bad value ${enableval} for --enable-python3-bindings) ;;
+esac],[python3_bindings=true])
+
 if test "x$asan_enabled" = "xtrue"; then
     CFLAGS_ASAN+=" -fsanitize=address"
     CFLAGS_ASAN+=" -DASAN_ENABLED"
@@ -144,7 +160,14 @@ if test "x$python2" = "xtrue"; then
 	m4_define_default([_AM_PYTHON_INTERPRETER_LIST],
 					  [python2 python2.7 python2.6 python2.5 python2.4 python2.3 python2.2 python2.1 python2.0])
 	AM_PATH_PYTHON
-	AX_PYTHON_DEVEL([< '3'])
+	m4_ifdef([AX_PYTHON_DEVEL], [AX_PYTHON_DEVEL([< '3'])], [
+		AC_SUBST([PYTHON2_CPPFLAGS], [])
+		AC_SUBST([PYTHON2_LIBS], [])
+		AC_SUBST([PYTHON_CPPFLAGS], [])
+		AC_SUBST([PYTHON_LIBS], [])
+		AC_SUBST([PYTHON_EXTRA_LIBS], [])
+		AC_SUBST([PYTHON_EXTRA_LDFLAGS], [])
+	])
 	PYTHON2_CPPFLAGS=$PYTHON_CPPFLAGS
 	PYTHON2_LIBS=$PYTHON_LIBS
 	AC_SUBST(PYTHON2_CPPFLAGS)
@@ -158,8 +181,14 @@ fi
 
 AM_CONDITIONAL(ASAN_ENABLED, test x$asan_enabled = xtrue)
 AM_CONDITIONAL(PYTHON2, test x$python2 = xtrue)
+AM_CONDITIONAL(PYTHON3_BINDINGS, test x$python3_bindings = xtrue)
 
-AC_PATH_PROGS(SWIG, [swig4.0 swig3.0 swig])
+if test "x$python2" = "xtrue" || test "x$python3_bindings" = "xtrue"; then
+	AC_PATH_PROGS(SWIG, [swig4.0 swig3.0 swig])
+else
+	SWIG=""
+fi
+AC_SUBST(SWIG)
 
 CXXFLAGS_COMMON=""
 CXXFLAGS_COMMON+=" -ansi"

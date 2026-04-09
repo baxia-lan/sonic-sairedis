@@ -45,6 +45,12 @@ else
 configure_opts += --disable-python2
 endif
 
+ifeq (,$(filter nopython3,$(DEB_BUILD_PROFILES)))
+configure_opts += --enable-python3-bindings
+else
+configure_opts += --disable-python3-bindings
+endif
+
 ifneq ($(filter syncd,$(DEB_BUILD_PROFILES)),)
 ifneq ($(filter vs,$(DEB_BUILD_PROFILES)),)
 configure_opts += --with-sai=vs
@@ -58,6 +64,12 @@ endif
 
 %:
 	dh $@
+
+override_dh_autoreconf:
+	dh_autoreconf
+
+override_dh_autoreconf_clean:
+	dh_autoreconf_clean
 
 override_dh_auto_build:
 	dh_auto_build --max-parallel=$(SAIREDIS_BUILD_JOBS)

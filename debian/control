@@ -78,7 +78,7 @@ Description: This package contains Switch State Service sairedis Python2 library
 
 Package: python3-pysairedis
 Architecture: any
+Build-Profiles: <!nopython3>
 Depends: ${shlibs:Depends}, ${misc:Pre-Depends}
 Section: libs
 Description: This package contains Switch State Service sairedis Python3 library.
-

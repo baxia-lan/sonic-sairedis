@@ -1,4 +1,7 @@
-SUBDIRS = py3
+SUBDIRS =
+if PYTHON3_BINDINGS
+SUBDIRS += py3
+endif
 if PYTHON2
 SUBDIRS += py2
 endif
