@@ -16,7 +16,7 @@ genrule(
             "SAI/doc/**",
         ],
     ) + [
-        "//src/sonic-swss-common:swss_common_dev",
+        "//build/deb/sonic-swss-common:swss_common_dev",
     ],
     outs = [
         "libsairedis_1.0.0_amd64.deb",
