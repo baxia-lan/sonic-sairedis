@@ -34,7 +34,12 @@ SRC_DIR=$$(cd $$(dirname $(location debian/control)) && pwd)/..
 SRC_DIR=$$(cd "$$SRC_DIR" && pwd)
 DEPS_DIR=$$(mktemp -d)
 STAGING=$$(mktemp -d)
-find . -path './bazel-out/*/bin/src/*' -name '*.deb' -size +0 2>/dev/null | while IFS= read -r f; do cp "$$f" "$$DEPS_DIR/" 2>/dev/null; done || true
+# Copy swss-common dev debs using Bazel-provided locations
+for f in $(locations //build/deb/sonic-swss-common:swss_common_dev); do
+  [ -f "$$f" ] && cp "$$f" "$$DEPS_DIR/" 2>/dev/null || true
+done
+# Also pick up any other dep debs in the execution tree
+find . -path './bazel-out/*/bin/*' -name '*.deb' -size +0 2>/dev/null | while IFS= read -r f; do cp "$$f" "$$DEPS_DIR/" 2>/dev/null; done || true
 echo "Dep debs found: $$(ls $$DEPS_DIR/*.deb 2>/dev/null | wc -l || echo 0)"
 
 docker run --rm --platform linux/amd64 \
@@ -42,7 +47,7 @@ docker run --rm --platform linux/amd64 \
   -v "$$STAGING:/output" \
   -v "$$DEPS_DIR:/deps:ro" \
   -e DEBIAN_FRONTEND=noninteractive \
-  debian:bookworm-slim \
+  debian:bookworm-slim@sha256:4724b8cc51e33e398f0e2e15e18d5ec2851ff0c2280647e1310bc1642182655d \
   bash -o pipefail -c '
     unset SOURCE_DATE_EPOCH
     apt-get update -qq
